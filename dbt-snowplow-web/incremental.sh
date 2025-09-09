@@ -41,7 +41,10 @@ is_incremental=${1:-false}
 num_rows=${2:-10000}
 
 echo "Setting up Docker container"
-./setup_docker.sh
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Execute setup_docker.sh from the same directory
+"$SCRIPT_DIR/setup_docker.sh"
 
 # Function to check if Docker container is running
 check_docker_container() {
@@ -97,14 +100,14 @@ echo "Loading events"
 $PYTHON_CMD load_events.py events_yesterday.csv
 
 echo "Running dbt"
-./run_snowplow_web.sh
+"$SCRIPT_DIR/run_snowplow_web.sh"
 
 # Update the errors log and run results
 echo "###############################"
 echo ""
 echo "Updating the errors log and total results"
 if [ "$DBT_TARGET" = "embucket" ]; then
-   ./statistics.sh
+   "$SCRIPT_DIR/statistics.sh"
 fi
 echo ""
 
@@ -127,14 +130,14 @@ echo "Loading events"
 $PYTHON_CMD load_events.py events_today.csv
 
 echo "Running dbt"
-./run_snowplow_web.sh
+"$SCRIPT_DIR/run_snowplow_web.sh"
 
 # Update the errors log and run results
 echo "###############################"
 echo ""
 echo "Updating the errors log and total results"
 if [ "$DBT_TARGET" = "embucket" ]; then
-   ./statistics.sh
+   "$SCRIPT_DIR/statistics.sh"
 fi
 echo ""
 
