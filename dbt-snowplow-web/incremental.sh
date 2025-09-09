@@ -48,6 +48,19 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Function to check if Docker container is running
 check_docker_container() {
+    # Check if Docker is available
+    if ! command -v docker &> /dev/null; then
+        echo "⚠ Docker is not available, checking if Embucket is accessible..."
+        # Check if Embucket is accessible via HTTP
+        if curl -s http://localhost:3000/health >/dev/null 2>&1; then
+            echo "✓ Embucket is accessible at localhost:3000"
+            return 0
+        else
+            echo "⚠ Embucket is not accessible at localhost:3000"
+            return 1
+        fi
+    fi
+    
     echo "Checking if Docker container 'em' is running..."
     if docker ps --format "table {{.Names}}" | grep -q "^em$"; then
         echo "✓ Docker container 'em' is running"
@@ -62,6 +75,19 @@ check_docker_container() {
 wait_for_container() {
     local max_attempts=30  # Wait up to 5 minutes (30 * 10 seconds)
     local attempt=1
+    
+    # Check if Docker is available
+    if ! command -v docker &> /dev/null; then
+        echo "Docker is not available, checking if Embucket is accessible..."
+        if check_docker_container; then
+            echo "✓ Embucket is accessible"
+            return 0
+        else
+            echo "❌ Error: Embucket is not accessible at localhost:3000"
+            echo "Please ensure Embucket is running and accessible"
+            return 1
+        fi
+    fi
     
     echo "Waiting for Docker container 'em' to be in running state..."
     
